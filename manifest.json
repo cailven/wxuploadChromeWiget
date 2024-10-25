@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "微信公众号素材抓取器",
+  "version": "1.0",
+  "description": "抓取微信公众号后台素材箱信息",
+  "permissions": [
+    "activeTab",
+    "https://mp.weixin.qq.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://mp.weixin.qq.com/cgi-bin/filepage*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ]
+}

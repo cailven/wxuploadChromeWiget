@@ -1,0 +1,63 @@
+#material-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 400px;
+  max-height: 80vh;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+#material-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.material-item {
+  margin-bottom: 5px;
+}
+
+#download-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#material-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#material-table th, #material-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+#material-table th {
+  background-color: #f2f2f2;
+}
+
+#fetch-btn, #download-btn {
+  margin-top: 10px;
+  margin-right: 10px;
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#fetch-btn:hover, #download-btn:hover {
+  background-color: #45a049;
+}
