@@ -1,0 +1,2 @@
+# wxuploadChromeWiget
+一个可以抓取公众号后台素材库的chrome插件
