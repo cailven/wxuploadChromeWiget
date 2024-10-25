@@ -1,24 +1,39 @@
 let materials = [];
+let isDragging = false;
+let dragOffsetX, dragOffsetY;
 
 function createPanel() {
   const panel = document.createElement('div');
   panel.id = 'material-panel';
   panel.innerHTML = `
-    <h2>素材列表</h2>
-    <button id="fetch-btn">抓取素材</button>
-    <button id="download-btn">下载JSON</button>
-    <button id="clear-btn">清空数据</button>
-    <div id="material-list">
-      <table id="material-table">
-        <thead>
-          <tr>
-            <th>选择</th>
-            <th>名称</th>
-            <th>URL</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div id="panel-header">
+      <h2 id="panel-title">素材列表</h2>
+      <div id="panel-controls">
+        <button id="minimize-btn">-</button>
+        <button id="close-btn">×</button>
+      </div>
+    </div>
+    <div id="panel-content">
+      <div id="button-container">
+        <div>
+          <button id="fetch-btn">抓取素材</button>
+          <button id="download-btn">下载JSON</button>
+          <button id="clear-btn">清空数据</button>
+        </div>
+        <div id="data-stats">总计: 0 | 已选: 0</div>
+      </div>
+      <div id="material-list">
+        <table id="material-table">
+          <thead>
+            <tr>
+              <th>选择</th>
+              <th>名称</th>
+              <th class="url-column">URL</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   `;
   document.body.appendChild(panel);
@@ -26,6 +41,44 @@ function createPanel() {
   document.getElementById('fetch-btn').addEventListener('click', fetchMaterials);
   document.getElementById('download-btn').addEventListener('click', downloadJSON);
   document.getElementById('clear-btn').addEventListener('click', clearMaterials);
+  document.getElementById('minimize-btn').addEventListener('click', toggleMinimize);
+  document.getElementById('close-btn').addEventListener('click', closePanel);
+
+  const header = document.getElementById('panel-header');
+  header.addEventListener('mousedown', startDragging);
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', stopDragging);
+}
+
+function startDragging(e) {
+  isDragging = true;
+  const panel = document.getElementById('material-panel');
+  dragOffsetX = e.clientX - panel.offsetLeft;
+  dragOffsetY = e.clientY - panel.offsetTop;
+}
+
+function drag(e) {
+  if (isDragging) {
+    const panel = document.getElementById('material-panel');
+    panel.style.left = (e.clientX - dragOffsetX) + 'px';
+    panel.style.top = (e.clientY - dragOffsetY) + 'px';
+  }
+}
+
+function stopDragging() {
+  isDragging = false;
+}
+
+function toggleMinimize() {
+  const panel = document.getElementById('material-panel');
+  panel.classList.toggle('minimized');
+  const minimizeBtn = document.getElementById('minimize-btn');
+  minimizeBtn.textContent = panel.classList.contains('minimized') ? '+' : '-';
+}
+
+function closePanel() {
+  const panel = document.getElementById('material-panel');
+  panel.style.display = 'none';
 }
 
 function extractMaterialInfo() {
@@ -58,7 +111,7 @@ function updateMaterialList() {
     tr.innerHTML = `
       <td><input type="checkbox" class="select-checkbox" data-index="${index}" ${material.selected ? 'checked' : ''}></td>
       <td>${material.name}</td>
-      <td>${material.url}</td>
+      <td class="url-column">${material.url}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -66,10 +119,20 @@ function updateMaterialList() {
   // 添加勾选框事件监听
   document.querySelectorAll('.select-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', (event) => {
-      const index = event.target.getAttribute('data-index');
+      const index = parseInt(event.target.getAttribute('data-index'));
       materials[index].selected = event.target.checked;
+      updateDataStats(); // 更新统计信息
     });
   });
+
+  updateDataStats(); // 更新统计信息
+}
+
+function updateDataStats() {
+  const totalCount = materials.length;
+  const selectedCount = materials.filter(m => m.selected).length;
+  const dataStats = document.getElementById('data-stats');
+  dataStats.textContent = `总计: ${totalCount} | 已选: ${selectedCount}`;
 }
 
 function fetchMaterials() {
@@ -83,11 +146,11 @@ function fetchMaterials() {
   materials.sort((a, b) => a.name.localeCompare(b.name));
   
   updateMaterialList();
+  updateDataStats(); // 更新统计信息
 }
 
 function downloadJSON() {
-  // 过滤掉未选中的项
-  const selectedMaterials = materials.filter(material => material.selected);
+  const selectedMaterials = materials.filter(m => m.selected);
   const jsonContent = JSON.stringify(selectedMaterials, null, 2);
   const blob = new Blob([jsonContent], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
@@ -101,6 +164,7 @@ function downloadJSON() {
 function clearMaterials() {
   materials = [];
   updateMaterialList();
+  updateDataStats(); // 更新统计信息
 }
 
 // 创建面板并初始化
