@@ -27,8 +27,9 @@ function createPanel() {
           <thead>
             <tr>
               <th>选择</th>
+              <th>缩略图</th>
               <th>名称</th>
-              <th class="url-column">URL</th>
+              <th>URL</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -91,7 +92,10 @@ function extractMaterialInfo() {
       const name = nameElement.textContent.trim();
       const style = imgElement.getAttribute('style');
       const urlMatch = style.match(/url\("(.+?)"\)/);
-      const url = urlMatch ? urlMatch[1] : '';
+      let url = urlMatch ? urlMatch[1] : '';
+      
+      // 去掉 URL 中的 ?wx_fmt=png&from=appmsg 部分
+      url = url.split('?')[0];
       
       newMaterials.push({
         name: name,
@@ -110,8 +114,9 @@ function updateMaterialList() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><input type="checkbox" class="select-checkbox" data-index="${index}" ${material.selected ? 'checked' : ''}></td>
-      <td>${material.name}</td>
-      <td class="url-column">${material.url}</td>
+      <td><img src="${material.url}" class="thumbnail" alt="${material.name}"></td>
+      <td><div class="name-cell">${material.name}</div></td>
+      <td class="url-column"><div class="url-cell">${material.url}</div></td>
     `;
     tbody.appendChild(tr);
   });
@@ -125,7 +130,32 @@ function updateMaterialList() {
     });
   });
 
+  // 添加缩略图悬停事件
+  document.querySelectorAll('.thumbnail').forEach(img => {
+    img.addEventListener('mouseover', showPreview);
+    img.addEventListener('mouseout', hidePreview);
+  });
+
   updateDataStats(); // 更新统计信息
+}
+
+function showPreview(event) {
+  const preview = document.createElement('div');
+  preview.className = 'preview';
+  preview.innerHTML = `<img src="${event.target.src}" alt="预览">`;
+  document.body.appendChild(preview);
+  
+  // 设置预览图位置
+  const rect = event.target.getBoundingClientRect();
+  preview.style.left = `${rect.right + 10}px`;
+  preview.style.top = `${rect.top}px`;
+}
+
+function hidePreview() {
+  const preview = document.querySelector('.preview');
+  if (preview) {
+    preview.remove();
+  }
 }
 
 function updateDataStats() {
@@ -143,7 +173,7 @@ function fetchMaterials() {
   materials = Array.from(new Set(combinedMaterials.map(JSON.stringify))).map(JSON.parse);
   
   // 根据名称排序
-  materials.sort((a, b) => a.name.localeCompare(b.name));
+  // materials.sort((a, b) => a.name.localeCompare(b.name));
   
   updateMaterialList();
   updateDataStats(); // 更新统计信息
